@@ -1,5 +1,6 @@
 package com.example.dell.myapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
@@ -29,7 +30,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 	private YViewPager viewPager;
 	private Button button;
 	private LineChart lineChart;
-
+	private TextView city_textview;
 
 	private CatchbyJsoup catchbyJsoup;
 	private Tools tools;
@@ -60,8 +61,15 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 
 	private void initView() {
 		button = buildButton();
-		mTextView = buildtextView();
+		//mTextView = buildtextView();
 		viewPager = buildPager();
+		city_textview = (TextView)viewList.get(0).findViewById(R.id.Citytext);
+	}
+
+	private TextView buildcitytext() {
+		city_textview = findViewById(R.id.CurrHeight_text);
+		Log.e(TAG, String.valueOf(city_textview));
+		return city_textview;
 	}
 
 	private LineChart buildChart() {
@@ -76,7 +84,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 	}
 
 	private TextView buildtextView() {
-		mTextView = findViewById(R.id.text11);
+		//mTextView = findViewById(R.id.text11);
 		return mTextView;
 	}
 
@@ -97,21 +105,9 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()){
-			case R.id.text11:
-				break;
 			case R.id.btn:
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						jsoupString = catchbyJsoup.getData(39);
-						tidePointList = putDataIn(jsoupString);
-						lineChart = buildChart();
-						lineChart.notifyDataSetChanged();
-						lineChart.invalidate();
-					}
-				}).start();
-
-
+						Intent intent = new Intent(MainActivity.this,Choose_Pos_Activity.class);
+						startActivityForResult(intent,1);
 			default:
 				break;
 		}
@@ -136,5 +132,25 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 		}
 
 		return tidePointList;
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		final int code = data.getIntExtra("poscode",39);
+		String city = data.getStringExtra("chooseCity");
+		Log.e(TAG,city);
+		city_textview.setText(city);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				jsoupString = catchbyJsoup.getData(code);
+				tidePointList = putDataIn(jsoupString);
+				lineChart = buildChart();
+				lineChart.notifyDataSetChanged();
+				lineChart.invalidate();
+			}
+		}).start();
+
 	}
 }
