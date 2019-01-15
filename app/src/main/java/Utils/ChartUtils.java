@@ -1,7 +1,11 @@
 package Utils;
 
+import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 
+import com.github.mikephil.charting.components.IMarker;
+import com.github.mikephil.charting.components.MarkerView;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -26,11 +30,12 @@ public class ChartUtils {
 
 	private List<TidePoint> tidePointList;
 
-	public List<Entry> TidetoEntry(List tidePointList){
+
+	public List<Entry> tidetoEntry(List tidePointList){
 		List<Entry> pointValues = new LinkedList<>();
 		for (int i = 0; i < tidePointList.size(); i++) {
 			TidePoint point = (TidePoint) tidePointList.get(i);
-			pointValues.add(new Entry(i, point.getHeigth()));
+			pointValues.add(new Entry(point.getTime(), point.getHeigth()));
 		}
 		return pointValues;
 	}
@@ -38,7 +43,7 @@ public class ChartUtils {
 	public LineData getlineData(List<TidePoint> tidePointList) {
 		final int Data_COUNT = 5;
 
-		LineDataSet lineDataSet = new LineDataSet(TidetoEntry(tidePointList),"");
+		LineDataSet lineDataSet = new LineDataSet(tidetoEntry(tidePointList),"");
 		lineDataSet.setColor(Color.parseColor("#5dbcfe"));
 		//设置该线的宽度
 		lineDataSet.setLineWidth(1f);
@@ -48,8 +53,23 @@ public class ChartUtils {
 		lineDataSet.setHighlightEnabled(true);
 		//设置是否画圆
 		lineDataSet.setDrawCircles(true);
+		lineDataSet.setDrawValues(false);//绘制坐标点的值
+		lineDataSet.setDrawFilled(true);//向下填充
 		lineDataSet.setCircleColor(Color.parseColor("#5bbcff"));
 
 		return new LineData(lineDataSet);
+	}
+
+
+	class MarkView extends MarkerView{
+		/**
+		 * Constructor. Sets up the MarkerView with a custom layout resource.
+		 *
+		 * @param context
+		 * @param layoutResource the layout resource to use for the MarkerView
+		 */
+		public MarkView(Context context, int layoutResource) {
+			super(context, layoutResource);
+		}
 	}
 }

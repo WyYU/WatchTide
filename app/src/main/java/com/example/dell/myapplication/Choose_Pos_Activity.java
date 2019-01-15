@@ -51,7 +51,7 @@ public class Choose_Pos_Activity extends WearableActivity implements View.OnClic
 		String string = (String) spinner.getSelectedItem();
 		chooseid = sdMap.get(string);
 		Intent intent = new Intent();
-		intent.putExtra("posCode",chooseid);
+		intent.putExtra("poscode",chooseid);
 		intent.putExtra("chooseCity",string);
 		setResult(0,intent);
 		finish();

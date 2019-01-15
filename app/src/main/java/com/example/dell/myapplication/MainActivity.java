@@ -9,11 +9,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.github.mikephil.charting.charts.BarLineChartBase;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.listener.BarLineChartTouchListener;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import Adapter.Viewadapter;
 import Modle.SdMap;
@@ -74,7 +81,25 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 
 	private LineChart buildChart() {
 		lineChart =findViewById(R.id.linechart);
+		lineChart.setNoDataText("无数据");
+		lineChart.clear();
+		lineChart.zoomToCenter(2, 1f);
+		lineChart.setScaleEnabled(false); //设置无缩放
+        lineChart.getAxisRight().setEnabled(false);
+		lineChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
 		lineChart.setData(chartUtils.getlineData(tidePointList));
+
+		BarLineChartTouchListener barLineChartTouchListener = (BarLineChartTouchListener) lineChart.getOnTouchListener();
+		barLineChartTouchListener.stopDeceleration();
+		XAxis xAxis = lineChart.getXAxis();
+		xAxis.setValueFormatter(new IAxisValueFormatter() {
+			@Override
+			public String getFormattedValue(float value, AxisBase axis) {
+				Log.e("X Time", String.valueOf(value));
+				return tools.UnxiTimetoDate((long) value);
+			}
+		});
+
 		return lineChart;
 	}
 
@@ -83,19 +108,18 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 		return button;
 	}
 
-	private TextView buildtextView() {
-		//mTextView = findViewById(R.id.text11);
-		return mTextView;
-	}
-
 	private YViewPager buildPager() {
 		viewPager = findViewById(R.id.Ypager);
 		layoutInflater =LayoutInflater.from(this);
+
 		View view1 = layoutInflater.inflate(R.layout.first_laout,null);
 		View view2 = layoutInflater.inflate(R.layout.second_layout,null);
+
 		view1.findViewById(R.id.btn).setOnClickListener(this);
+
 		viewList.add(view1);
 		viewList.add(view2);
+
 		viewAdapter = new Viewadapter(viewList);
 		viewPager.setAdapter(viewAdapter);
 		return viewPager;
@@ -123,8 +147,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 		tidePointList = new LinkedList<>();
 		for(int i=0;i<tidedata.length-1;i++){
 			if(i%2==0){
-				tidePointList.add(new TidePoint(tidedata[i].replace(" ",""),Integer.parseInt(tidedata[i+1].replace(" ",""))));
-				//tidePointList.add(new TidePoint(tools.UnxiTimetoDate(tidedata[i].replace(" ","")),Integer.parseInt(tidedata[i+1].replace(" ",""))));
+				tidePointList.add(new TidePoint(Long.parseLong(tidedata[i].replace(" ","")),Integer.parseInt(tidedata[i+1].replace(" ",""))));
 			}
 		}
 		for(TidePoint t:tidePointList){

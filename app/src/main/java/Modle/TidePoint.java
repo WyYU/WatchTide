@@ -1,14 +1,14 @@
 package Modle;
 
 public class TidePoint {
-    private String Date;
+    private long Date;
     private int Heigth;
 
-    public TidePoint(String Date, int heigth){
+    public TidePoint(long Date, int heigth){
         this.Heigth= heigth;
         this.Date =Date;
     }
-    public String getTime() {
+    public long getTime() {
         return Date;
     }
 

@@ -13,9 +13,8 @@ public class Tools {
     }
 
     //时间戳转日期格式
-    public String UnxiTimetoDate(String data){
-        Long utime = Long.parseLong(data);
-        Date date = new Date(utime*1000);
+    public String UnxiTimetoDate(long data){
+        Date date = new Date((long) (data*1000));
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
         String nowdate = dateFormat.format(date);
         return nowdate;
