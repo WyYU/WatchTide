@@ -2,6 +2,7 @@ package com.example.dell.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +21,8 @@ import com.github.mikephil.charting.listener.BarLineChartTouchListener;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import Adapter.Viewadapter;
@@ -38,6 +41,8 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 	private Button button;
 	private LineChart lineChart;
 	private TextView city_textview;
+	private TextView currHeighView;
+	private TextView halView;
 
 	private CatchbyJsoup catchbyJsoup;
 	private Tools tools;
@@ -71,23 +76,19 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 		//mTextView = buildtextView();
 		viewPager = buildPager();
 		city_textview = (TextView)viewList.get(0).findViewById(R.id.Citytext);
-	}
-
-	private TextView buildcitytext() {
-		city_textview = findViewById(R.id.CurrHeight_text);
-		Log.e(TAG, String.valueOf(city_textview));
-		return city_textview;
+		currHeighView = (TextView)viewList.get(0).findViewById(R.id.CurrHeight_text);
+		halView = (TextView)viewList.get(0).findViewById(R.id.h_and_l_text);
+		lineChart = buildChart();
 	}
 
 	private LineChart buildChart() {
-		lineChart =findViewById(R.id.linechart);
-		lineChart.setNoDataText("无数据");
+		lineChart = (LineChart) viewList.get(1).findViewById(R.id.linechart);
 		lineChart.clear();
+		lineChart.setNoDataText("暂无数据");
 		lineChart.zoomToCenter(2, 1f);
 		lineChart.setScaleEnabled(false); //设置无缩放
         lineChart.getAxisRight().setEnabled(false);
 		lineChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
-		lineChart.setData(chartUtils.getlineData(tidePointList));
 
 		BarLineChartTouchListener barLineChartTouchListener = (BarLineChartTouchListener) lineChart.getOnTouchListener();
 		barLineChartTouchListener.stopDeceleration();
@@ -169,11 +170,34 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 			public void run() {
 				jsoupString = catchbyJsoup.getData(code);
 				tidePointList = putDataIn(jsoupString);
-				lineChart = buildChart();
+				lineChart.setData(chartUtils.getlineData(tidePointList));
 				lineChart.notifyDataSetChanged();
 				lineChart.invalidate();
 			}
 		}).start();
+	}
 
+	private TidePoint getLowpoint(List<TidePoint> tidePointList) {
+		int currl = tidePointList.get(0).getHeigth();
+		TidePoint heigthPoint = tidePointList.get(0);
+		for(TidePoint t:tidePointList){
+			if(t.getHeigth()<currl){
+				currl = t.getHeigth();
+				heigthPoint = t;
+			}
+		}
+		return heigthPoint;
+	}
+
+	private TidePoint getHeightpoint(List<TidePoint> tidePointList) {
+		int currh = tidePointList.get(0).getHeigth();
+		TidePoint heigthPoint = tidePointList.get(0);
+		for(TidePoint t:tidePointList){
+			if(t.getHeigth()>currh){
+				currh = t.getHeigth();
+				heigthPoint = t;
+			}
+		}
+		return heigthPoint;
 	}
 }

@@ -6,7 +6,7 @@
     android:layout_gravity="center"
     android:gravity="center"
     android:orientation="vertical"
-    app:boxedEdges="all">
+    >
 
     <Spinner
         android:id="@+id/spinner"
