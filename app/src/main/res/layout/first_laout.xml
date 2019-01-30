@@ -30,13 +30,20 @@
         android:layout_height="wrap_content"
         android:id="@+id/CurrHeight_text"
         android:gravity="center|clip_horizontal"
-        android:textSize="24dp"
+        android:textSize="22dp"
         android:text="当前潮高:   m"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/h_and_l_text"
+        android:id="@+id/heigthtext"
         android:gravity="center|clip_horizontal"
-        android:textSize="20dp"
-        android:text="最高点 : m  最低点 m"/>
+        android:textSize="15dp"
+        android:text="最高点 : m"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/lowtext"
+        android:gravity="center|clip_horizontal"
+        android:textSize="15dp"
+        android:text="最低点 : m"/>
 </LinearLayout>

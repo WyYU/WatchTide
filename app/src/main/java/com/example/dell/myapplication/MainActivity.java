@@ -2,28 +2,26 @@ package com.example.dell.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Message;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.github.mikephil.charting.charts.BarLineChartBase;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.listener.BarLineChartTouchListener;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 import Adapter.Viewadapter;
 import Modle.SdMap;
@@ -43,6 +41,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 	private TextView city_textview;
 	private TextView currHeighView;
 	private TextView halView;
+	private TextView lowView;
 
 	private CatchbyJsoup catchbyJsoup;
 	private Tools tools;
@@ -70,14 +69,15 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 		sdMap = new SdMap();
 		tools = new Tools();
 	}
-
+ 
 	private void initView() {
 		button = buildButton();
 		//mTextView = buildtextView();
 		viewPager = buildPager();
 		city_textview = (TextView)viewList.get(0).findViewById(R.id.Citytext);
 		currHeighView = (TextView)viewList.get(0).findViewById(R.id.CurrHeight_text);
-		halView = (TextView)viewList.get(0).findViewById(R.id.h_and_l_text);
+		halView = (TextView)viewList.get(0).findViewById(R.id.heigthtext);
+		lowView = (TextView)viewList.get(0).findViewById(R.id.lowtext);
 		lineChart = buildChart();
 	}
 
@@ -85,7 +85,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 		lineChart = (LineChart) viewList.get(1).findViewById(R.id.linechart);
 		lineChart.clear();
 		lineChart.setNoDataText("暂无数据");
-		lineChart.zoomToCenter(2, 1f);
+		lineChart.zoomToCenter(3f, 1f);
 		lineChart.setScaleEnabled(false); //设置无缩放
         lineChart.getAxisRight().setEnabled(false);
 		lineChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
@@ -93,14 +93,13 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 		BarLineChartTouchListener barLineChartTouchListener = (BarLineChartTouchListener) lineChart.getOnTouchListener();
 		barLineChartTouchListener.stopDeceleration();
 		XAxis xAxis = lineChart.getXAxis();
+		xAxis.setLabelCount(5,false);
 		xAxis.setValueFormatter(new IAxisValueFormatter() {
 			@Override
 			public String getFormattedValue(float value, AxisBase axis) {
-				Log.e("X Time", String.valueOf(value));
-				return tools.UnxiTimetoDate((long) value);
+				return "";
 			}
 		});
-
 		return lineChart;
 	}
 
@@ -147,8 +146,12 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 		String tidedata[] = data.split(",");
 		tidePointList = new LinkedList<>();
 		for(int i=0;i<tidedata.length-1;i++){
+			//加上时区偏移的8h
 			if(i%2==0){
-				tidePointList.add(new TidePoint(Long.parseLong(tidedata[i].replace(" ","")),Integer.parseInt(tidedata[i+1].replace(" ",""))));
+				tidePointList.add(
+						new TidePoint(
+								Long.parseLong(tidedata[i].replace(" ",""))+8 * 60 * 60 * 1000,
+								Integer.parseInt(tidedata[i+1].replace(" ",""))));
 			}
 		}
 		for(TidePoint t:tidePointList){
@@ -163,16 +166,22 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 		super.onActivityResult(requestCode, resultCode, data);
 		final int code = data.getIntExtra("poscode",39);
 		String city = data.getStringExtra("chooseCity");
-		Log.e(TAG,city);
 		city_textview.setText(city);
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				jsoupString = catchbyJsoup.getData(code);
 				tidePointList = putDataIn(jsoupString);
+				TidePoint heigthpoint = getHeightpoint(tidePointList);
+				TidePoint lowpoint = getLowpoint(tidePointList);
+				TidePoint currpoint = getCurrPoint(tidePointList);
+				//Log.e("L and H ","最高点"+heigthpoint+"最低点"+lowpoint);
 				lineChart.setData(chartUtils.getlineData(tidePointList));
 				lineChart.notifyDataSetChanged();
 				lineChart.invalidate();
+				currHeighView.setText("当前潮高:"+currpoint.getHeigth()+"m");
+				halView.setText("最高点:"+heigthpoint.getHeigth()+"m("+tools.UnxiTimetoDate(heigthpoint.getTime())+")");
+				lowView.setText("最低点:"+lowpoint.getHeigth()+"m("+tools.UnxiTimetoDate(lowpoint.getTime())+")");
 			}
 		}).start();
 	}
@@ -192,12 +201,26 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 	private TidePoint getHeightpoint(List<TidePoint> tidePointList) {
 		int currh = tidePointList.get(0).getHeigth();
 		TidePoint heigthPoint = tidePointList.get(0);
-		for(TidePoint t:tidePointList){
-			if(t.getHeigth()>currh){
+		for (TidePoint t : tidePointList) {
+			if (t.getHeigth() > currh) {
 				currh = t.getHeigth();
 				heigthPoint = t;
 			}
 		}
 		return heigthPoint;
+	}
+
+	private TidePoint getCurrPoint(List<TidePoint> tidePointList) {
+		long now = new Date().getTime()/1000+8 * 60 * 60 * 1000;
+		long der  = Math.abs(tidePointList.get(0).getTime()-now);
+		TidePoint currpoint = tidePointList.get(0);
+		for (TidePoint t:tidePointList) {
+			long d = Math.abs(t.getTime()-now);
+			if(d<der) {
+				der = d;
+				currpoint = t;
+			}
+		}
+		return currpoint;
 	}
 }
