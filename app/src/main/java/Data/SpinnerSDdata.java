@@ -11,6 +11,7 @@ public class SpinnerSDdata {
 
 	public List<String> getSDData(){
 		List<String> dataList = new ArrayList<String>();
+		dataList.add("张家埠");
 		dataList.add("威海");
 		dataList.add("城山角");
 		dataList.add("石岛");

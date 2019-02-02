@@ -12,5 +12,6 @@ public class SdMap extends HashMap<String,Integer> {
 		this.put("威海",39);
 		this.put("城山角",40);
 		this.put("石岛",41);
+		this.put("张家埠",42);
 	}
 }

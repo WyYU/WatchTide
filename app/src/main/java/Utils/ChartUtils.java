@@ -43,7 +43,7 @@ public class ChartUtils {
 	public LineData getlineData(List<TidePoint> tidePointList) {
 		final int Data_COUNT = 5;
 
-		LineDataSet lineDataSet = new LineDataSet(tidetoEntry(tidePointList),"");
+		LineDataSet lineDataSet = new LineDataSet(tidetoEntry(tidePointList),null);
 		lineDataSet.setColor(Color.parseColor("#5dbcfe"));
 		//设置该线的宽度
 		lineDataSet.setLineWidth(1f);
